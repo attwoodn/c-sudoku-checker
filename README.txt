@@ -4,4 +4,4 @@ Group members:
 
 
 Instructions to compile:
-	todo...
+	gcc -o exec sudoku_checker.c -lpthread
