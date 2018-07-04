@@ -23,7 +23,8 @@ int valid_row_arr[9] = {0};
 void *check_sudoku_row(void *args){
 	sudoku_thread_params *stp = (sudoku_thread_params *)args;
 	printf("%d\n", stp->row);
-	// check row values and if all are valid: valid_row_arr[stp->row] = 1;
+	// sudoku row is valid, so mark it as correct
+	// valid_row_arr[stp->row] = 1;
 }
 
 
@@ -33,8 +34,8 @@ int main(void){
 
 	// take user input from stdin (would allow for piping input from a file)
 	// tokenize user input on space or \n. do some validation to ensure that all values are < 10, and num values == 81
-	// store tokens into an 81 length array or 2D 9x9 array to store the sudoku puzzle values
-	// pass each row of values in sudoku_thread_params and validate
+	// store values into an 81 length array or 2D 9x9 array to store the sudoku puzzle values
+	// Set row_values array in sudoku_thread_params struct for each row of 9 values
 	
 	// create the worker threads and run them
 	for(int i = 0; i < 9; i++){
