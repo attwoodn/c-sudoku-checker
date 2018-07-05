@@ -13,29 +13,77 @@
 // structure for passing data to threads
 typedef struct {
 	int row;
-	int row_values[9];
+	int column;
+	int board[9][9];
+    int result[9][9];
 } sudoku_thread_params;
 
-// A value of 0 means the row was not valid. Each thread should set the 
-// coresponding row index value to 1 if it determines the row is valid
+// A value of 0 means the part was not valid. Each thread should set the
+// corresponding part index value to 1 if it determines the row is valid
 int valid_row_arr[9] = {0};
+int valid_column_arr[9] = {0};
+int valid_3x3_section_arr[9] = {0};
 
 // variable for turning on and off debug print statements
-int debug = 1;
-
+int debug = 0;
 
 /* function declarations */
+
+// comparision function used by quick sort
+int cmpfunc (const void * a, const void * b) {
+    return ( *(int*)a - *(int*)b );
+}
+
+// Checks the validity of the row of the board specified in the sudoku_thread_params
 void *check_sudoku_row(void *args){
 	sudoku_thread_params *stp = (sudoku_thread_params *)args;
-	if (debug) printf("%d\n", stp->row);
-	// sudoku row is valid, so mark it as correct
-	// valid_row_arr[stp->row] = 1;
+
+    // mark the row as valid till proven otherwise
+    valid_row_arr[stp->row] = 1;
+
+	// sort the row
+    qsort(stp->board[stp->row], 9, sizeof(int), cmpfunc);
+
+    // check that the sorted row is 1-9 in order
+    for (int i = 0; i < 9; i++) {
+        if (stp->board[stp->row][i] != i + 1) {
+            valid_row_arr[stp->row] = 0;
+            break;
+        }
+    }
+}
+
+// Checks the validity of the column of the board specified in the sudoku_thread_params
+void *check_sudoku_column(void *args){
+    sudoku_thread_params *stp = (sudoku_thread_params *)args;
+
+    // mark the column as valid till proven otherwise
+    valid_column_arr[stp->column] = 1;
+
+    // copy the column into a 1D array
+    int column[9];
+    for (int i = 0; i < 9; i++)
+        column[i] = stp->board[i][stp->column];
+
+    // sort the column
+    qsort(column, 9, sizeof(int), cmpfunc);
+
+    // check that the sorted column is 1-9 in order
+    for (int i = 0; i < 9; i++)
+        if (column[i] != i + 1) {
+            valid_column_arr[stp->column] = 0;
+            break;
+        }
+}
+
+void *check_sudoku_3x3_section(void *args){
+    //TODO
 }
 
 
 int main(void){
 	//storage for thread IDs
-	pthread_t tid_arr[9];
+	pthread_t tid_arr[27];
 
 	char *input_text = calloc(1, sizeof(char));
 	char buffer[INPUT_BUF_SIZE];
@@ -106,18 +154,30 @@ int main(void){
 
 	// Set row_values array in sudoku_thread_params struct for each row of 9 values
 	
-	// create the worker threads and run them
+	// create the row worker threads and run them
 	for(int i = 0; i < 9; i++){
 		sudoku_thread_params *data = (sudoku_thread_params *) malloc(sizeof(sudoku_thread_params));
-		data->row = i;
+		memcpy(data->board, sudoku_grid, sizeof (int) * 9 * 9);
+        data->row = i;
 		if (pthread_create(&tid_arr[i], NULL, &check_sudoku_row, (void *)data) != 0){
-			printf("Failed to create thread number %d\n", i);
+			printf("Failed to create row thread number %d\n", i);
         	exit(1);
 		}
 	}
 
+    // create the column threads and run them
+    for(int i = 0; i < 9; i++){
+        sudoku_thread_params *data = (sudoku_thread_params *) malloc(sizeof(sudoku_thread_params));
+        memcpy(data->board, sudoku_grid, sizeof (int) * 9 * 9);
+        data->column = i;
+        if (pthread_create(&tid_arr[i+9], NULL, &check_sudoku_column, (void *)data) != 0){
+            printf("Failed to create column thread number %d\n", i);
+            exit(1);
+        }
+    }
+
 	// terminate the worker threads
-	for(int i = 0; i < 9; i++){
+	for(int i = 0; i < 18; i++){
 		pthread_join(tid_arr[i], NULL);
 	}
 
@@ -127,4 +187,18 @@ int main(void){
 			printf("Row %d is invalid\n", i+1);
 		}
 	}
+
+    // check that all sudoku column were valid
+    for(int i = 0; i < 9; i++){
+        if(valid_column_arr[i] == 0){
+            printf("Column %d is invalid\n", i+1);
+        }
+    }
+
+//    // check that all sudoku 3x3 sections were valid
+//    for(int i = 0; i < 9; i++){
+//        if(valid_3x3_section_arr[i] == 0){
+//            printf("3x3 sections %d is invalid\n", i+1);
+//        }
+//    }
 }
