@@ -70,8 +70,8 @@ int main(void){
 			exit(1);
 		}
 
-		if (cell_value > 9){
-			printf("Error: value in cell at row %d and column %d had a value above 9 (%d)\n", row_index+1, col_index+1, cell_value);
+		if (cell_value > 9 || cell_value < 0){
+			printf("Error: value in cell at row %d and column %d had a value outside of the range 0-9 (%d)\n", row_index+1, col_index+1, cell_value);
 			exit(1);
 		}
 
