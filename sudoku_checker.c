@@ -251,5 +251,9 @@ int main(void){
         }
     }
 
+    if (returnValue == 0) {
+        printf("Puzzle is correctly solved\n");
+	}
+
 	return returnValue;
 }
