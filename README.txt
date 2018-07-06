@@ -4,4 +4,4 @@ Group members:
 
 
 Instructions to compile:
-	gcc -o exec sudoku_checker.c -lpthread
+	gcc -o exec sudoku_checker.c -lpthread -std=c
